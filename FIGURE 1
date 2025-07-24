@@ -1,0 +1,53 @@
+import numpy as np
+import matplotlib.pyplot as plt
+from matplotlib.colors import ListedColormap
+import matplotlib.patches as mpatches
+
+# Set seed for reproducibility
+np.random.seed(42)
+
+# Define a 2D lat-lon grid
+lon = np.linspace(0, 360, 180)
+lat = np.linspace(-90, 90, 90)
+Lon, Lat = np.meshgrid(lon, lat)
+
+# --- Simulate topographic gradient magnitude |∇h| ---
+def gaussian_blob(center_lon, center_lat, spread):
+    return np.exp(-((Lon - center_lon)**2 + (Lat - center_lat)**2) / (2 * spread**2))
+
+# Place two LLSVP-style blobs under Pacific and Africa
+grad_h = (
+    1.8 * gaussian_blob(210, -15, 20) +  # Pacific
+    1.3 * gaussian_blob(15, -20, 25)     # Africa
+)
+
+# Normalize to max ~10 km/km gradient units
+grad_h *= 10
+
+# --- Simulate secular variation hotspots (dB/dt > 15 nT/yr) ---
+sec_var = np.zeros_like(grad_h)
+hotspots = [
+    (195, -10), (200, -20), (15, -10), (40, -25), (250, -30),
+    (90, 10), (120, 20), (330, 5), (45, -10), (205, -5)
+]
+for lon_c, lat_c in hotspots:
+    sec_var += gaussian_blob(lon_c, lat_c, 6)
+
+# Normalize to nT/yr
+sec_var *= 20
+
+# --- Plotting ---
+plt.figure(figsize=(12, 6))
+plt.contourf(Lon, Lat, grad_h, levels=20, cmap='inferno', alpha=0.8)
+cs = plt.contour(Lon, Lat, sec_var, levels=[15], colors='cyan', linewidths=2)
+
+# Overlay hotzones
+plt.title("Figure 1: Spatial Correlation of $|\\nabla h|$ and Secular Variation Hotspots")
+plt.xlabel("Longitude (°)")
+plt.ylabel("Latitude (°)")
+cbar = plt.colorbar(label="Topographic Gradient $|\\nabla h|$ (km/km)")
+cyan_patch = mpatches.Patch(color='cyan', label='Secular Variation $\\partial B/\\partial t > 15$ nT/yr')
+plt.legend(handles=[cyan_patch], loc='lower left')
+plt.grid(alpha=0.3)
+plt.tight_layout()
+plt.show()
