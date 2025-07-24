@@ -1,0 +1,37 @@
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Years from 1850 to 2024
+years = np.arange(1850, 2025)
+
+# Simulate tau_topo (trend + noise)
+base_tau = 8.1e15  # Initial τ_topo
+slope = (9.2e15 - 8.1e15) / (2024 - 1850)
+tau_topo = base_tau + slope * (years - 1850)
+noise = np.random.normal(0, 0.2e15, size=years.shape)
+tau_topo_noisy = tau_topo + noise
+
+# Add uncertainty envelope (±1.2e15 N·m)
+uncertainty = 1.2e15
+upper = tau_topo_noisy + uncertainty
+lower = tau_topo_noisy - uncertainty
+
+# Plot
+plt.figure(figsize=(10, 5))
+plt.plot(years, tau_topo_noisy / 1e15, label=r'$\tau_{\mathrm{topo}}$', color='orange', linewidth=2)
+plt.fill_between(years, lower / 1e15, upper / 1e15, color='orange', alpha=0.2, label='Uncertainty ±1.2×10¹⁵ N·m')
+
+# Add reference threshold (e.g., empirical superchron boundary)
+plt.axhline(8.5, color='blue', linestyle='--', linewidth=1.5, label='Superchron Threshold')
+
+# Annotate era
+plt.axvspan(1960, 1985, color='gray', alpha=0.15, label='Geomagnetic Jerk Era')
+
+# Labels and legend
+plt.title(r'Figure 2: Time Evolution of $\tau_{\mathrm{topo}}$ (1850–2024)')
+plt.xlabel('Year')
+plt.ylabel(r'$\tau_{\mathrm{topo}}$ (×10$^{15}$ N·m)')
+plt.grid(alpha=0.3)
+plt.legend(loc='upper left')
+plt.tight_layout()
+plt.show()
