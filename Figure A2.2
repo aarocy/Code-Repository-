@@ -1,0 +1,26 @@
+from mpl_toolkits.mplot3d import Axes3D
+from matplotlib import cm
+
+# Grid of σ_Q and ∇h values
+sigma_Q = np.linspace(20, 50, 50)  # mW/m^2
+grad_h = np.linspace(0.1, 0.3, 50) # km/km
+Sigma, GradH = np.meshgrid(sigma_Q, grad_h)
+
+# Use τ_topo = k1 * σ_Q * |∇h| + k2
+k1 = 1.0e15
+k2 = 2.0e15
+tau_topo = k1 * Sigma * GradH + k2
+
+# Plot surface
+fig = plt.figure(figsize=(8, 6))
+ax = fig.add_subplot(111, projection='3d')
+surf = ax.plot_surface(Sigma, GradH, tau_topo / 1e15, cmap=cm.viridis, alpha=0.9)
+
+ax.set_xlabel(r'$\sigma_Q$ (mW/m$^2$)')
+ax.set_ylabel(r'$|\nabla h|$ (km/km)')
+ax.set_zlabel(r'$\tau_{\mathrm{topo}}$ (×10$^{15}$ N·m)')
+ax.set_title('Figure A2.2: Sensitivity of $\tau_{\\text{topo}}$ to Heat Flux and Topography')
+fig.colorbar(surf, shrink=0.6, aspect=10)
+plt.tight_layout()
+plt.savefig("figA2_tau_topo_sensitivity.pdf", dpi=300)
+plt.show()
